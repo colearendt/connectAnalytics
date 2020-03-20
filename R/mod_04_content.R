@@ -32,7 +32,16 @@ mod_04_content_server <- function(input, output, session, r){
   observe({
     req(r$client, r$username)
     
-    r$content <- connectapi::get_content(r$client, limit = Inf)
+    user_guid <- connectapi::get_users(r$client, prefix = r$username) %>%
+      dplyr::filter(username == username)
+    
+    if (!is.null(user_guid)) {
+      content_filter <- list(account_guid = user_guid)
+    } else {
+      content_filter <- NULL
+    }
+    
+    r$content <- connectapi::get_content(r$client, limit = Inf, filter = content_filter)
     
     r$user_content <- r$content %>% 
       dplyr::filter(owner_username == r$username)
